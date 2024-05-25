@@ -11,8 +11,6 @@ export const isTouched = (
   stage: BoardT,
   { x: moveX, y: moveY }: { x: number; y: number }
 ) => {
-  console.log(stage, figure);
-
   for (let y = 0; y < figure.shape.length; y += 1) {
     for (let x = 0; x < figure.shape[y].length; x += 1) {
       if (figure.shape[y][x] !== 0) {

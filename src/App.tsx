@@ -42,8 +42,6 @@ export default function App() {
     if (!isTouched(figure, board, { x: 0, y: 1 })) {
       updateTetPosition({ x: 0, y: 1, touched: false });
     } else {
-      console.log(figure);
-
       if (figure.pos.y < 2) {
         setGameOver(true);
         setDropTimeInterval(null);
