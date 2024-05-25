@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { isTouched } from "../utils";
 import { BoardT, Figure } from "../types";
 
-type UpdateFigurePosParams = {
+type UpdateTetPositionParams = {
   x: number;
   y: number;
   touched: boolean;
@@ -11,9 +11,9 @@ type UpdateFigurePosParams = {
 
 interface IUsePlayerResponse {
   figure: Figure;
-  updateFigurePos: (params: UpdateFigurePosParams) => void;
+  updateTetPosition: (params: UpdateTetPositionParams) => void;
   resetFigure: () => void;
-  figureRotate: (stage: BoardT, dir: number) => void;
+  figureRotate: (stage: BoardT) => void;
 }
 
 export const useFigure = (): IUsePlayerResponse => {
@@ -23,18 +23,17 @@ export const useFigure = (): IUsePlayerResponse => {
     touched: false,
   });
 
-  const rotate = (matrix: (string | number)[][], dir: number) => {
-    const rotatedShape = matrix.map((_, index) =>
-      matrix.map((col) => col[index])
+  const rotateMatrix = (matrix: (string | number)[][]) => {
+    const transposedMatrix = matrix.map((_item, index) =>
+      matrix.map((column) => column[index])
     );
-    if (dir > 0) {
-      return rotatedShape.map((row) => row.reverse());
-    }
+
+    return transposedMatrix.map((row) => row.reverse());
   };
 
-  const figureRotate = (stage: BoardT, dir: number) => {
+  const figureRotate = (stage: BoardT) => {
     const clonedFigure = JSON.parse(JSON.stringify(figure));
-    clonedFigure.shape = rotate(clonedFigure.shape, dir);
+    clonedFigure.shape = rotateMatrix(clonedFigure.shape);
 
     const pos = clonedFigure.pos.x;
     let offset = 1;
@@ -43,7 +42,6 @@ export const useFigure = (): IUsePlayerResponse => {
       clonedFigure.pos.x += offset;
       offset = -(offset + (offset > 0 ? 1 : -1));
       if (offset > clonedFigure.shape[0].length) {
-        rotate(clonedFigure.shape, -dir);
         clonedFigure.pos.x = pos;
         return;
       }
@@ -52,7 +50,7 @@ export const useFigure = (): IUsePlayerResponse => {
     setFigure(clonedFigure);
   };
 
-  const updateFigurePos = ({ x, y, touched }: UpdateFigurePosParams) => {
+  const updateTetPosition = ({ x, y, touched }: UpdateTetPositionParams) => {
     setFigure((prev) => ({
       ...prev,
       pos: { x: (prev.pos.x += x), y: (prev.pos.y += y) },
@@ -62,11 +60,11 @@ export const useFigure = (): IUsePlayerResponse => {
 
   const resetFigure = useCallback(() => {
     setFigure({
-      pos: { x: BOARD_WIDTH / 2 - 2, y: 0 },
+      pos: { x: BOARD_WIDTH / 2 - 1, y: 0 },
       shape: randomShape().shape,
       touched: false,
     });
   }, []);
 
-  return { figure, updateFigurePos, resetFigure, figureRotate };
+  return { figure, updateTetPosition, resetFigure, figureRotate };
 };

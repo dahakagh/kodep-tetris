@@ -1,31 +1,31 @@
 import { KeyboardEvent, useState } from "react";
 import { useFigure } from "./hooks/useFigure";
 import { useBoard } from "./hooks/useBoard";
-import { useGameStatus } from "./hooks/useGameStatus";
+import { useGameStatusStat } from "./hooks/useGameStatusStat";
 import { isTouched, createBoard } from "./utils";
 import { useInterval } from "./hooks/useInterval";
-import StartButton from "./components/StartButton";
-import Display from "./components/Display";
 import styled from "styled-components";
 import Board from "./components/Board";
 
 export default function App() {
-  const [dropTime, setDropTime] = useState<number | null>(null);
+  const [dropTimeInterval, setDropTimeInterval] = useState<number | null>(null);
   const [gameOver, setGameOver] = useState(false);
-  const { figure, updateFigurePos, resetFigure, figureRotate } = useFigure();
+  const { figure, updateTetPosition, resetFigure, figureRotate } = useFigure();
   const { board, setBoard, rowsCleared } = useBoard(figure, resetFigure);
   const { score, setScore, rows, setRows, level, setLevel } =
-    useGameStatus(rowsCleared);
+    useGameStatusStat(rowsCleared);
 
-  const movePlayer = (dir: number) => {
-    if (!isTouched(figure, board, { x: dir, y: 0 })) {
-      updateFigurePos({ x: dir, y: 0, touched: false });
+  const moveFigure = (direction: "left" | "right") => {
+    const dirToCoord = direction === "left" ? -1 : 1;
+
+    if (!isTouched(figure, board, { x: dirToCoord, y: 0 })) {
+      updateTetPosition({ x: dirToCoord, y: 0, touched: false });
     }
   };
 
   const startGame = () => {
     setBoard(createBoard());
-    setDropTime(1000);
+    setDropTimeInterval(1000);
     resetFigure();
     setGameOver(false);
     setScore(0);
@@ -33,71 +33,71 @@ export default function App() {
     setLevel(0);
   };
 
-  const drop = () => {
+  const dropFigureBySpeedUpInterval = () => {
     if (rows > (level + 1) * 10) {
       setLevel((prev) => prev + 1);
-      setDropTime(1000 / (level + 1) + 200);
+      setDropTimeInterval(1000 / (level + 1) + 200);
     }
 
     if (!isTouched(figure, board, { x: 0, y: 1 })) {
-      updateFigurePos({ x: 0, y: 1, touched: false });
+      updateTetPosition({ x: 0, y: 1, touched: false });
     } else {
       console.log(figure);
 
-      if (figure.pos.y < 1) {
+      if (figure.pos.y < 2) {
         setGameOver(true);
-        setDropTime(null);
+        setDropTimeInterval(null);
       }
 
-      updateFigurePos({ x: 0, y: 0, touched: true });
+      updateTetPosition({ x: 0, y: 0, touched: true });
     }
   };
 
   const keyUp = ({ key }: KeyboardEvent<HTMLDivElement>) => {
     if (!gameOver) {
       if (key === "ArrowDown") {
-        setDropTime(1000 / (level + 1) + 200);
+        setDropTimeInterval(1000 / (level + 1) + 200);
       }
     }
   };
 
-  const dropPlayer = () => {
-    setDropTime(null);
-    drop();
+  const dropFigure = () => {
+    setDropTimeInterval(null);
+    dropFigureBySpeedUpInterval();
   };
 
   const move = ({ key }: KeyboardEvent<HTMLDivElement>) => {
     if (!gameOver) {
       if (key === "ArrowLeft") {
-        movePlayer(-1);
+        moveFigure("left");
       } else if (key === "ArrowUp") {
-        figureRotate(board, 1);
+        figureRotate(board);
       } else if (key === "ArrowRight") {
-        movePlayer(1);
+        moveFigure("right");
       } else if (key === "ArrowDown") {
-        dropPlayer();
+        dropFigure();
       }
     }
   };
 
   useInterval(() => {
-    drop();
-  }, dropTime);
+    dropFigureBySpeedUpInterval();
+  }, dropTimeInterval);
 
   return (
-    <Container tabIndex={0} role={"button"} onKeyUp={keyUp} onKeyDown={move}>
+    <Container tabIndex={0} onKeyUp={keyUp} onKeyDown={move}>
       <Board board={board} />
       <Statistic>
         {gameOver ? (
-          <Display gameOver={gameOver} text={"Game Over"} />
+          <TextField isGameOver={gameOver}>Game Over</TextField>
         ) : (
-          <div>
-            <Display text={`Score: ${score}`} />
-            <Display text={`Rows: ${rows}`} />
-            <Display text={`Level: ${level}`} />
-          </div>
+          <>
+            <TextField>Score: {score}</TextField>
+            <TextField>Rows: {rows}</TextField>
+            <TextField>Level: {level}</TextField>
+          </>
         )}
-        <StartButton start={startGame} />
+        <Button onClick={startGame}>Start Game</Button>
       </Statistic>
     </Container>
   );
@@ -116,4 +116,33 @@ const Statistic = styled.aside`
   width: 100%;
   max-width: 200px;
   margin-left: 20px;
+`;
+
+const TextField = styled.div<{ isGameOver?: boolean }>`
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  margin: 0 0 20px 0;
+  padding: 20px;
+  border: 4px solid #333;
+  min-height: 30px;
+  width: 100%;
+  border-radius: 20px;
+  background-color: #000;
+  color: ${(props) => (props.isGameOver ? "red" : "#999")};
+`;
+
+export const Button = styled.button`
+  box-sizing: border-box;
+  margin: 0 0 20px 0;
+  padding: 20px;
+  min-height: 30px;
+  width: 100%;
+  border-radius: 20px;
+  border: none;
+  color: white;
+  background: #333;
+  font-size: 1rem;
+  outline: none;
+  cursor: pointer;
 `;

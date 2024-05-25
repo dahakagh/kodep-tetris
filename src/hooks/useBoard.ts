@@ -1,6 +1,6 @@
 import { createBoard } from "../utils";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { BoardT, Figure } from "../types";
+import { BoardT, CellStatus, Figure } from "../types";
 
 interface IUseBoardResponse {
   board: BoardT;
@@ -23,7 +23,7 @@ export const useBoard = (
         if (row.findIndex((cell) => cell[0] === 0) === -1) {
           setRowsCleared((prev) => prev + 1);
           acc.unshift(
-            new Array(newStage[0].length).fill([0, "clear"]) as (
+            new Array(newStage[0].length).fill([0, CellStatus.CLEAR]) as (
               | string
               | number
             )[][]
@@ -37,7 +37,9 @@ export const useBoard = (
 
     const updateBoard = (prevStage: (string | number)[][][]) => {
       const newStage = prevStage.map((row) =>
-        row.map((cell) => (cell[1] === "clear" ? [0, "clear"] : cell))
+        row.map((cell) =>
+          cell[1] === CellStatus.CLEAR ? [0, CellStatus.CLEAR] : cell
+        )
       );
 
       figure.shape.forEach((row, y) => {
@@ -45,7 +47,7 @@ export const useBoard = (
           if (value !== 0) {
             newStage[y + figure.pos.y][x + figure.pos.x] = [
               value,
-              figure.touched ? "merged" : "clear",
+              figure.touched ? CellStatus.MERGED : CellStatus.CLEAR,
             ];
           }
         });

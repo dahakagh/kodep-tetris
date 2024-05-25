@@ -15,7 +15,9 @@ interface IUseGameStatusResponse {
   setLevel: Dispatch<SetStateAction<number>>;
 }
 
-export const useGameStatus = (rowsCleared: number): IUseGameStatusResponse => {
+export const useGameStatusStat = (
+  rowsCleared: number
+): IUseGameStatusResponse => {
   const [score, setScore] = useState(0);
   const [rows, setRows] = useState(0);
   const [level, setLevel] = useState(0);
