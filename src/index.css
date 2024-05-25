@@ -1,0 +1,13 @@
+body {
+  margin: 0 auto;
+  width: 100vw;
+  height: 100vh;
+  background: rgb(208, 183, 224);
+  background: linear-gradient(
+    90deg,
+    rgba(208, 183, 224, 1) 0%,
+    rgba(38, 29, 253, 0.29037552521008403) 50%,
+    rgba(94, 112, 180, 1) 100%
+  );
+  overflow: hidden;
+}
