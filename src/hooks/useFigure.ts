@@ -16,12 +16,14 @@ interface IUsePlayerResponse {
   figureRotate: (stage: BoardT) => void;
 }
 
+const defaultFigure = {
+  pos: { x: 0, y: 0 },
+  shape: SHAPES[0].shape,
+  touched: false,
+};
+
 export const useFigure = (): IUsePlayerResponse => {
-  const [figure, setFigure] = useState<Figure>({
-    pos: { x: 0, y: 0 },
-    shape: SHAPES[0].shape,
-    touched: false,
-  });
+  const [figure, setFigure] = useState<Figure>(defaultFigure);
 
   const rotateMatrix = (matrix: (string | number)[][]) => {
     const transposedMatrix = matrix.map((_item, index) =>
@@ -51,16 +53,25 @@ export const useFigure = (): IUsePlayerResponse => {
   };
 
   const updateTetPosition = ({ x, y, touched }: UpdateTetPositionParams) => {
-    setFigure((prev) => ({
-      ...prev,
-      pos: { x: (prev.pos.x += x), y: (prev.pos.y += y) },
-      touched,
-    }));
+    setFigure((prev) => {
+      const updatedPositionX = (prev.pos.x += x);
+      const updatedPositionY = (prev.pos.y += y);
+
+      const updatedPositions = { x: updatedPositionX, y: updatedPositionY };
+
+      return {
+        ...prev,
+        pos: updatedPositions,
+        touched,
+      };
+    });
   };
 
   const resetFigure = useCallback(() => {
+    const startPosition = { x: BOARD_WIDTH / 2 - 1, y: 0 };
+
     setFigure({
-      pos: { x: BOARD_WIDTH / 2 - 1, y: 0 },
+      pos: startPosition,
       shape: randomShape().shape,
       touched: false,
     });
