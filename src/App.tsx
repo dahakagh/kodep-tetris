@@ -1,4 +1,4 @@
-import { KeyboardEvent, useState } from "react";
+import { KeyboardEvent, useRef, useState } from "react";
 import { useFigure } from "./hooks/useFigure";
 import { useBoard } from "./hooks/useBoard";
 import { useGameStatusStat } from "./hooks/useGameStatusStat";
@@ -8,6 +8,7 @@ import styled from "styled-components";
 import Board from "./components/Board";
 
 export default function App() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [dropTimeInterval, setDropTimeInterval] = useState<number | null>(null);
   const [gameOver, setGameOver] = useState(false);
   const { figure, updateTetPosition, resetFigure, figureRotate } = useFigure();
@@ -24,6 +25,9 @@ export default function App() {
   };
 
   const startGame = () => {
+    const node = containerRef.current;
+    node?.focus();
+
     setBoard(createBoard());
     setDropTimeInterval(1000);
     resetFigure();
@@ -83,7 +87,7 @@ export default function App() {
   }, dropTimeInterval);
 
   return (
-    <Container tabIndex={0} onKeyUp={keyUp} onKeyDown={move}>
+    <Container ref={containerRef} tabIndex={0} onKeyUp={keyUp} onKeyDown={move}>
       <Board board={board} />
       <Statistic>
         {gameOver ? (
@@ -107,6 +111,10 @@ const Container = styled.div`
   justify-content: center;
   padding: 40px;
   width: 100%;
+  &:focus {
+    outline: none;
+    box-shadow: none;
+  }
 `;
 
 const Statistic = styled.aside`
